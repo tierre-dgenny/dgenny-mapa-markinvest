@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Comparativo — dgenny® · Marca Invest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --azul: #121325; --roxo: #6660B4; --rosa: #FFBEF5; --white: #FFFFFF; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: #0d0e1f; font-family: 'Quicksand', Arial, sans-serif; }
+        .deck { position: relative; width: 100vw; height: 100vh; }
+        .slide { position: absolute; inset: 0; display: none; flex-direction: column; background: var(--azul); color: var(--white); padding: 46px 66px 68px; overflow: hidden; }
+        .slide.active { display: flex; }
+        .slide::before { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 65% 65% at 95% 5%, rgba(102, 96, 180, 0.12) 0%, transparent 70%), radial-gradient(ellipse 45% 45% at 5% 95%, rgba(255, 190, 245, 0.06) 0%, transparent 70%); }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 52px; background: rgba(12, 13, 28, 0.97); border-top: 1px solid rgba(255, 255, 255, 0.06); display: flex; align-items: center; justify-content: center; gap: 20px; z-index: 999; backdrop-filter: blur(12px); }
+        .nav-btn { background: rgba(102, 96, 180, 0.18); border: 1px solid rgba(102, 96, 180, 0.38); color: #fff; padding: 7px 22px; border-radius: 50px; cursor: pointer; font-family: 'Quicksand', sans-serif; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+        .nav-btn:hover { background: var(--roxo); border-color: var(--roxo); }
+        .slide-counter { font-family: 'Quicksand', sans-serif; font-size: 12px; color: rgba(255, 255, 255, 0.35); min-width: 56px; text-align: center; }
+        .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--roxo), var(--rosa)); transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1); z-index: 999; border-radius: 0 2px 2px 0; }
+        .logo { font-family: 'Montserrat', Arial, sans-serif; font-size: 15px; font-weight: 800; color: var(--white); letter-spacing: -0.2px; display: flex; align-items: center; gap: 7px; position: relative; z-index: 1; }
+        .logo-ico { width: 22px; height: 22px; border-radius: 50%; background: var(--rosa); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; color: var(--azul); }
+        .logo-reg { font-size: 8px; vertical-align: super; color: rgba(255, 255, 255, 0.4); }
+        .slide-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 34px; position: relative; z-index: 1; }
+        .tag { font-size: 10px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; color: var(--roxo); background: rgba(102, 96, 180, 0.12); border: 1px solid rgba(102, 96, 180, 0.24); padding: 5px 14px; border-radius: 50px; }
+        .eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 2.2px; text-transform: uppercase; color: var(--roxo); margin-bottom: 10px; position: relative; z-index: 1; }
+        h1, h2, h3 { font-family: 'Montserrat', Arial, sans-serif; }
+        .hl { font-family: 'Montserrat', Arial, sans-serif; font-weight: 800; line-height: 1.1; position: relative; z-index: 1; }
+        .hl-xl { font-size: 48px; }
+        .hl-lg { font-size: 36px; }
+        .hl-md { font-size: 26px; }
+        .sub { font-family: 'Quicksand', sans-serif; color: rgba(255, 255, 255, 0.52); line-height: 1.6; position: relative; z-index: 1; }
+        .sub-lg { font-size: 19px; }
+        .sub-md { font-size: 14px; }
+        .c-rosa { color: var(--rosa); }
+        .c-roxo { color: #8078d4; }
+        .c-green { color: #64e080; }
+        .c-red { color: #ff8080; }
+        .mt-8 { margin-top: 8px; }
+        .mt-12 { margin-top: 12px; }
+        .mt-16 { margin-top: 16px; }
+        .mt-20 { margin-top: 20px; }
+        .mt-24 { margin-top: 24px; }
+        .mt-28 { margin-top: 28px; }
+        .mt-32 { margin-top: 32px; }
+        .mt-40 { margin-top: 40px; }
+        .content { flex: 1; position: relative; z-index: 1; display: flex; flex-direction: column; }
+        .fn { font-size: 11px; color: rgba(255, 255, 255, 0.25); position: relative; z-index: 1; margin-top: auto; padding-top: 10px; }
+        .card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 20px; position: relative; z-index: 1; }
+        .card.roxo { background: rgba(102, 96, 180, 0.1); border-color: rgba(102, 96, 180, 0.22); }
+        .card.rosa { background: rgba(255, 190, 245, 0.06); border-color: rgba(255, 190, 245, 0.18); }
+        .card.danger { background: rgba(255, 80, 80, 0.07); border-color: rgba(255, 80, 80, 0.18); }
+        .card.success { background: rgba(80, 220, 120, 0.07); border-color: rgba(80, 220, 120, 0.18); }
+        .card.warn { background: rgba(255, 180, 50, 0.07); border-color: rgba(255, 180, 50, 0.2); }
+        .clabel { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255, 255, 255, 0.35); margin-bottom: 7px; }
+        .ctitle { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 16px; margin-bottom: 5px; }
+        .cdesc { font-size: 14px; color: rgba(255, 255, 255, 0.48); line-height: 1.55; }
+        .bnum { font-family: 'Montserrat', Arial, sans-serif; font-size: 34px; font-weight: 900; line-height: 1; letter-spacing: -1px; }
+        .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; position: relative; z-index: 1; }
+        .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 13px; position: relative; z-index: 1; }
+        .g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; position: relative; z-index: 1; }
+        .dtable { width: 100%; border-collapse: collapse; font-size: 15px; position: relative; z-index: 1; }
+        .dtable th { font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255, 255, 255, 0.33); padding: 9px 14px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.07); }
+        .dtable td { padding: 12px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.8); vertical-align: middle; }
+        .dtable tr:last-child td { border-bottom: none; }
+        .dtable .amt { font-family: 'Montserrat', sans-serif; font-weight: 600; text-align: right; color: #ff8080; }
+        .dtable .amt.pos { color: #64e080; }
+        .dtable .amt.neu { color: var(--rosa); }
+        .dtable .sub-head td { font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding-top: 13px; padding-bottom: 3px; border-bottom: none; }
+        .dtable .sub-head.red td { color: rgba(255, 80, 80, 0.6); }
+        .dtable .sub-head.grn td { color: rgba(100, 224, 128, 0.6); }
+        .dtable .total-row td { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--rosa); font-size: 14px; background: rgba(255, 190, 245, 0.05); border-top: 1px solid rgba(255, 190, 245, 0.18); border-bottom: none; }
+        .chk { display: flex; align-items: flex-start; gap: 10px; padding: 11px 13px; border-radius: 10px; font-size: 14px; color: rgba(255, 255, 255, 0.68); }
+        .chk.bad { background: rgba(255, 80, 80, 0.06); border: 1px solid rgba(255, 80, 80, 0.14); }
+        .chk.good { background: rgba(80, 220, 120, 0.06); border: 1px solid rgba(80, 220, 120, 0.14); }
+        .chk.lock { background: rgba(255, 180, 50, 0.06); border: 1px solid rgba(255, 180, 50, 0.14); }
+        .mrow { display: grid; grid-template-columns: 1fr 105px 26px 105px; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+        .mrow:last-child { border-bottom: none; }
+        .mrow .ml { font-size: 14px; color: rgba(255, 255, 255, 0.7); }
+        .mrow .mb { font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 700; color: #ff8080; text-align: center; }
+        .mrow .ma { font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 700; color: #64e080; text-align: center; }
+        .mrow .mar { color: rgba(255, 255, 255, 0.2); font-size: 13px; text-align: center; }
+        .roi-box { background: linear-gradient(135deg, rgba(102, 96, 180, 0.2), rgba(255, 190, 245, 0.08)); border: 1px solid rgba(102, 96, 180, 0.28); border-radius: 18px; padding: 26px; text-align: center; position: relative; z-index: 1; }
+        .roi-num { font-family: 'Montserrat', Arial, sans-serif; font-size: 66px; font-weight: 900; line-height: 1; background: linear-gradient(135deg, #8078d4, var(--rosa)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -2px; }
+        .roi-lbl { font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: rgba(255, 255, 255, 0.4); margin-top: 6px; }
+        .stepbox { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 9px; position: relative; z-index: 1; }
+        .stepnum { width: 42px; height: 42px; border-radius: 50%; background: rgba(102, 96, 180, 0.15); border: 2px solid var(--roxo); display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 800; color: var(--roxo); }
+        .steptitle { font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700; }
+        .stepdesc { font-size: 11px; color: rgba(255, 255, 255, 0.45); line-height: 1.5; }
+        .flow7 { display: flex; align-items: stretch; gap: 0; position: relative; z-index: 1; }
+        .f7step { flex: 1; padding: 12px 6px; text-align: center; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .f7step.pain { background: rgba(255, 80, 80, 0.07); border-color: rgba(255, 80, 80, 0.2); }
+        .f7step.dg { background: rgba(102, 96, 180, 0.14); border-color: rgba(102, 96, 180, 0.3); }
+        .f7step.lock { background: rgba(255, 180, 50, 0.07); border-color: rgba(255, 180, 50, 0.2); }
+        .f7step .fnum { font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 700; color: rgba(255, 255, 255, 0.3); }
+        .f7step .fname { font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700; color: rgba(255, 255, 255, 0.9); line-height: 1.2; }
+        .f7step .fdesc { font-size: 11px; color: rgba(255, 255, 255, 0.4); }
+        .f7step .ftag { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-top: 2px; display: inline-block; }
+        .ftag.red { color: #ff8080; background: rgba(255, 80, 80, 0.12); }
+        .ftag.roxo { color: #a09ce8; background: rgba(102, 96, 180, 0.18); }
+        .ftag.oran { color: #ffb84d; background: rgba(255, 180, 50, 0.15); }
+        .ftag.grn { color: #64e080; background: rgba(80, 220, 120, 0.15); }
+        .farr { color: rgba(102, 96, 180, 0.4); font-size: 14px; display: flex; align-items: center; padding: 0 3px; flex-shrink: 0; }
+        .next-step-card { background: rgba(102, 96, 180, 0.13); border: 1px solid rgba(102, 96, 180, 0.35); border-radius: 16px; padding: 20px 24px; display: flex; align-items: flex-start; gap: 18px; position: relative; z-index: 1; }
+        .nsc .nt { font-family: 'Montserrat', sans-serif; font-size: 17px; font-weight: 800; color: var(--white); margin-bottom: 4px; }
+        .nsc .nd { font-size: 14px; color: rgba(255,255,255,0.58); line-height: 1.5; }
+        .nsc .na { font-size: 13px; font-weight: 700; color: var(--rosa); margin-top: 8px; }
+        .ns-num { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--roxo), var(--rosa)); display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 900; color: var(--azul); flex-shrink: 0; }
+        @media (max-width: 1024px) {
+            .slide { padding: 28px 34px 62px; }
+            .hl-xl { font-size: 32px; }
+            .hl-lg { font-size: 24px; }
+            .hl-md { font-size: 20px; }
+            .sub-lg { font-size: 16px; }
+            .g3 { grid-template-columns: 1fr 1fr; }
+            .g4 { grid-template-columns: 1fr 1fr; }
+            .roi-num { font-size: 48px; }
+            .bnum { font-size: 26px; }
+            .flow7 { overflow-x: auto; padding-bottom: 8px; }
+            .f7step { min-width: 80px; }
+            .mrow { grid-template-columns: 1fr 80px 20px 80px; }
+        }
+        @media (max-width: 600px) {
+            .slide { padding: 16px 16px 76px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+            .hl-xl { font-size: 22px; line-height: 1.2; }
+            .hl-lg { font-size: 18px; line-height: 1.2; }
+            .hl-md { font-size: 15px; }
+            .sub-lg { font-size: 13px; }
+            .sub-md { font-size: 12px; }
+            .eyebrow { font-size: 9px; letter-spacing: 1.5px; margin-bottom: 6px; }
+            .tag { font-size: 9px; padding: 4px 10px; letter-spacing: 1px; }
+            .slide-top { margin-bottom: 12px; }
+            .logo { font-size: 13px; }
+            .logo-ico { width: 18px; height: 18px; font-size: 9px; }
+            .g2, .g3, .g4 { grid-template-columns: 1fr; }
+            .flow7 { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+            .f7step { min-width: 76px; padding: 8px 4px; }
+            .mrow { grid-template-columns: 1fr 68px 18px 68px; gap: 5px; }
+            .mrow .ml, .mrow .mb, .mrow .ma { font-size: 11px; }
+            .roi-num { font-size: 40px; }
+            .roi-box { padding: 18px; }
+            .bnum { font-size: 22px; }
+            .nav-bar { height: 60px; gap: 12px; }
+            .nav-btn { padding: 11px 22px; font-size: 14px; }
+            .card { padding: 12px; }
+            .ctitle { font-size: 12px; }
+            .cdesc { font-size: 11px; }
+            .chk { font-size: 11px; padding: 9px 10px; gap: 8px; }
+            .dtable { font-size: 11px; }
+            .dtable th { font-size: 9px; padding: 7px 6px; }
+            .dtable td { padding: 8px 6px; }
+            .mt-40, .mt-36, .mt-32 { margin-top: 16px; }
+            .mt-28, .mt-24 { margin-top: 13px; }
+            .mt-20 { margin-top: 11px; }
+        }
+        @media print {
+            body { overflow: visible; }
+            .slide { position: relative !important; display: flex !important; page-break-after: always; height: 100vh; }
+            .nav-bar, .progress-bar { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="deck">
+
+        <!-- Slide 1: Capa -->
+        <div class="slide active">
+            <div class="slide-top">
+                <div class="logo">
+                    <div class="logo-ico">✦</div>
+                    <div>dgenny<span class="logo-reg">®</span></div>
+                </div>
+                <div class="tag">Confidencial</div>
+            </div>
+            <div class="content">
+                <h1 class="hl hl-xl">Mapa Comparativo</h1>
+                <h2 class="hl hl-lg mt-8">Marca Invest</h2>
+                <p class="sub sub-lg mt-24">O que muda — e o que se ganha — com a decisão certa.</p>
+                <p class="sub sub-md mt-12">O custo do processo atual de compras e o que a dgenny® transforma — sem substituir ninguém da equipe.</p>
+                <p class="fn mt-40"><strong>Marca Invest · Departamento de Compras</strong><br>Preparado pela dgenny® · Julho de 2026</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Diagnóstico -->
+        <div class="slide">
+            <div class="slide-top">
+                <div class="logo">
+                    <div class="logo-ico">✦</div>
+                    <div>dgenny<span class="logo-reg">®</span></div>
+                </div>
+            </div>
+            <div class="content">
+                <div class="eyebrow">Diagnóstico</div>
+                <h2 class="hl hl-lg">Como funciona hoje</h2>
+                <p class="sub sub-md mt-12">O processo de compras em 7 etapas — e onde o gargalo acontece</p>
+
+                <div class="flow7 mt-24">
+                    <div class="f7step">
+                        <div class="fnum">01</div>
+                        <div class="fname">Demanda</div>
+                        <div class="fdesc">Necessidade na obra</div>
+                    </div>
+                    <div class="farr">→</div>
+                    <div class="f7step">
+                        <div class="fnum">02</div>
+                        <div class="fname">Requisição</div>
+                        <div class="fdesc">Criada no Mega</div>
+                    </div>
+                    <div class="farr">→</div>
+                    <div class="f7step lock">
+                        <div class="fnum">03</div>
+                        <div class="fname">Aprovações</div>
+                        <div class="fdesc">Esteira no Mega</div>
+                        <span class="ftag oran">Espera</span>
+                    </div>
+                    <div class="farr">→</div>
+                    <div class="f7step pain">
+                        <div class="fnum">04</div>
+                        <div class="fname">Cotação</div>
+                        <div class="fdesc">Telefone + WhatsApp manual</div>
+                        <span class="ftag red">Gargalo</span>
+                    </div>
+                    <div class="farr">→</div>
+                    <div class="f7step pain">
+                        <div class="fnum">05</div>
+                        <div class="fname">Excel</div>
+                        <div class="fdesc">Mapa manual por 1 pessoa</div>
+                        <span class="ftag red">Retrabalho</span>
+                    </div>
+                    <div class="farr">→</div>
+                    <div class="f7step pain">
+                        <div class="fnum">06</div>
+                        <div class="fname">Mega</div>
+                        <div class="fdesc">Redigita tudo no ERP</div>
+                        <span class="ftag red">Dupla entrada</span>
+                    </div>
+                    <div class="farr">→</div>
+                    <div class="f7step">
+                        <div class="fnum">07</div>
+                        <div class="fname">Compra</div>
+                        <div class="fdesc">Decisão e fechamento</div>
+                    </div>
+                </div>
+
+                <div class="g2 mt-28">
+                    <div class="card danger">
+                        <div class="clabel">Gargalo nas etapas 4–5</div>
+                        <div class="ctitle">Cotação e mapa — 100% manuais</div>
+                        <div class="cdesc">Compradores usam telefone e WhatsApp individual para cada fornecedor. As propostas chegam em formatos diferentes e uma pessoa exclusiva consolida tudo em Excel — antes de redigitar no Mega.</div>
+                    </div>
+                    <div class="card danger">
+                        <div class="clabel">Gargalo na etapa 6</div>
+                        <div class="ctitle">Dupla entrada de dados</div>
+                        <div class="cdesc">O mapa é feito no Excel e depois repassado manualmente para o mapa de cotação do Mega. Duas vezes o mesmo trabalho — duas vezes a chance de erro.</div>
+                    </div>
+                </div>
+
+                <div class="card warn mt-16">
+                    <div class="clabel">Contexto crítico</div>
+                    <div class="ctitle">6 obras simultâneas — cotação acontece todo dia</div>
+                    <div class="cdesc">"Cotação tem todo dia, seja um material pequeno ou não." — Yuri Gomes, Gerente de Planejamento</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: A Dor Central -->
+        <div class="slide">
+            <div class="slide-top">
+                <div class="logo">
+                    <div class="logo-ico">✦</div>
+                    <div>dgenny<span class="logo-reg">®</span></div>
+                </div>
+            </div>
+            <div class="content">
+                <div class="eyebrow">A Dor Central</div>
+                <h2 class="hl hl-lg">Uma pessoa inteira dedicada ao mapa</h2>
+                <p class="sub sub-md mt-12">O trabalho mais caro que existe: pagar salário de compradora para preencher planilha</p>
+
+                <div class="card danger mt-24" style="border-left: 3px solid #ff8080;">
+                    <div class="clabel">Realidade da Marca Invest hoje</div>
+                    <div class="ctitle" style="font-size: 20px;">"Tem uma menina que faz os mapas — tem uma pessoa específica para isso."</div>
+                    <div class="cdesc mt-8">— Yuri Gomes, na reunião de 03/07/2026</div>
+                </div>
+
+                <div class="g3 mt-28">
+                    <div class="card danger">
+                        <div class="clabel">O que ela faz hoje</div>
+                        <div class="ctitle">Preenche planilha</div>
+                        <div class="cdesc">Recebe propostas dispersas (áudio, PDF, WhatsApp, foto) e consolida manualmente no Excel — para depois entrar no Mega</div>
+                    </div>
+                    <div class="card warn">
+                        <div class="clabel">O que ela poderia fazer</div>
+                        <div class="ctitle">Ser compradora</div>
+                        <div class="cdesc">Negociar, homologar fornecedores, analisar mercado, acompanhar entregas — trabalho de alto valor que hoje não tem quem faça</div>
+                    </div>
+                    <div class="card success">
+                        <div class="clabel">Com a dgenny®</div>
+                        <div class="ctitle c-green">Ela vira compradora</div>
+                        <div class="cdesc">O mapa é gerado automaticamente. A equipe passa de 3 para 4 compradores — sem contratar ninguém novo. Sem demissão.</div>
+                    </div>
+                </div>
+
+                <div class="card rosa mt-28">
+                    <div class="clabel">O ciclo vicioso que se retroalimenta</div>
+                    <div class="ctitle">Quanto mais obras, mais pressão no mesmo gargalo</div>
+                    <div class="cdesc mt-8">A Marca Invest vai lançar mais 2 obras. Mais volume = mais requisições = mais cotações = mais planilhas = mais pressão em 3 compradores + 1 mapeadora. O gargalo não some com crescimento — ele aumenta.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Por que o problema persiste -->
+        <div class="slide">
+            <div class="slide-top">
+                <div class="logo">
+                    <div class="logo-ico">✦</div>
+                    <div>dgenny<span class="logo-reg">®</span></div>
+                </div>
+            </div>
+            <div class="content">
+                <div class="eyebrow">Por que o problema persiste</div>
+                <h2 class="hl hl-lg">O Mega não resolve — e nenhum ERP resolve</h2>
+                <p class="sub sub-md mt-12">O gargalo não está no sistema interno. Está no canal onde os fornecedores vivem.</p>
+
+                <div class="g2 mt-28">
+                    <div class="card danger">
+                        <div class="clabel">O que as pessoas tentam fazer</div>
+                        <div class="ctitle">Melhorar o ERP</div>
+                        <div class="cdesc">Parametrizar melhor o Mega, criar novos fluxos de aprovação, usar o mapa de cotação nativo do sistema.</div>
+                        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,80,80,0.15); font-size: 13px; color: #ff8080; font-weight: 600;">Por que não resolve: o fornecedor não está no Mega. Ele está no WhatsApp.</div>
+                    </div>
+                    <div class="card success">
+                        <div class="clabel">O que realmente muda</div>
+                        <div class="ctitle c-green">Automatizar o canal</div>
+                        <div class="cdesc">A dgenny® fala com o fornecedor onde ele já está — no WhatsApp — e traz o resultado direto para o mapa do Mega.</div>
+                        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(80,220,120,0.15); font-size: 13px; color: #64e080; font-weight: 600;">Resultado: cotação automática + mapa preenchido no Mega. Sem planilha. Sem retrabalho.</div>
+                    </div>
+                </div>
+
+                <div class="card warn mt-28">
+                    <div class="clabel">A integração já existe</div>
+                    <div class="ctitle">dgenny® + Mega: chave de integração já está feita</div>
+                    <div class="cdesc mt-8">A dgenny® já tem integração com o Mega. As propostas coletadas via WhatsApp preenchem diretamente o mapa de cotação do Mega — eliminando a dupla entrada. O fluxo de vocês não muda: apenas os passos manuais desaparecem.</div>
+                </div>
+
+                <div class="g2 mt-20">
+                    <div class="card roxo">
+                        <div class="clabel">Antes</div>
+                        <div class="ctitle">WhatsApp → Excel → Mega</div>
+                        <div class="cdesc">3 passos manuais. 2 entradas de dados. 1 pessoa dedicada.</div>
+                    </div>
+                    <div class="card success">
+                        <div class="clabel">Com dgenny®</div>
+                        <div class="ctitle c-green">dgenny® → Mega (direto)</div>
+                        <div class="cdesc">1 passo automático. 0 retrabalho. Equipe livre.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Sem dgenny × Com dgenny — Processo -->
+        <div class="slide">
+            <div class="slide-top">
+                <div class="logo">
+                    <div class="logo-ico">✦</div>
+                    <div>dgenny<span class="logo-reg">®</span></div>
+                </div>
+            </div>
+            <div class="content">
+                <div class="eyebrow">Sem dgenny® × Com dgenny®</div>
+                <h2 class="hl hl-lg">Processo de Cotação</h2>
+                <p class="sub sub-md mt-12">Da cotação braçal à automação que libera os compradores para o que importa</p>
+
+                <table class="dtable mt-24">
+                    <tbody>
+                        <tr>
+                            <th>Etapa</th>
+                            <th style="text-align: center;">Hoje</th>
+                            <th></th>
+                            <th style="text-align: right;">Com dgenny®</th>
+                        </tr>
+                        <tr>
+                            <td>Disparo para fornecedores</td>
+                            <td style="color: #ff8080;">Manual — um a um (telefone + WhatsApp)</td>
+                            <td style="text-align: center; color: rgba(102, 96, 180, 0.4);">→</td>
+                            <td style="text-align: right; color: #64e080;">Simultâneo — todos de uma vez</td>
+                        </tr>
+                        <tr>
+                            <td>Follow-up com quem não respondeu</td>
+                            <td style="color: #ff8080;">100% manual — comprador para e liga</td>
+                            <td style="text-align: center; color: rgba(102, 96, 180, 0.4);">→</td>
+                            <td style="text-align: right; color: #64e080;">Automático — dgenny® cobra</td>
+                        </tr>
+                        <tr>
+                            <td>Recebimento e leitura das propostas</td>
+                            <td style="color: #ff8080;">Áudio, PDF, foto, Excel — formatos mistos</td>
+                            <td style="text-align: center; color: rgba(102, 96, 180, 0.4);">→</td>
+                            <td style="text-align: right; color: #64e080;">Interpretação automática e equalização</td>
+                        </tr>
+                        <tr>
+                            <td>Consolidação das propostas</td>
+                            <td style="color: #ff8080;">Excel manual por 1 pessoa dedicada</td>
+                            <td style="text-align: center; color: rgba(102, 96, 180, 0.4);">→</td>
+                            <td style="text-align: right; color: #64e080;">Mapa gerado automaticamente</td>
+                        </tr>
+                        <tr>
+                            <td>Entrada no mapa do Mega</td>
+                            <td style="color: #ff8080;">Retrabalho — redigita tudo no ERP</td>
+                            <td style="text-align: center; color: rgba(102, 96, 180, 0.4);">→</td>
+                            <td style="text-align: right; color: #64e080;">Integração direta — preenche automaticamente</td>
+                        </tr>
+                        <tr>
+                            <td>Fornecedores por cotação</td>
+                            <td style="color: #ff8080;">~3 (limite de tempo e esforço)</td>
+                            <td style="text-align: center; color: rgba(102, 96, 180, 0.4);">→</td>
+                            <td style="text-align: right; color: #64e080;">5+ sem esforço adicional</td>
+                        </tr>
+                        <tr>
+                            <td>Rastreabilidade das negociações</td>
+                            <td style="color: #ff8080;">Dispersa em WhatsApps individuais</td>
+                            <td style="text-align: center; color: rgba(102, 96, 180, 0.4);">→</td>
+                            <td style="text-align: right; color: #64e080;">Centralizada na plataforma</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="card rosa mt-24">
+                    <div class="clabel">Por que a dgenny® funciona com qualquer fornecedor de vocês</div>
+                    <div class="ctitle">Nenhum fornecedor precisa se cadastrar em nada</div>
+                    <div class="cdesc mt-8">A comunicação é 100% pelo WhatsApp que o fornecedor já usa. Ela fala com quem você já conhece — e busca novos na internet quando você precisar expandir a base.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Sem dgenny × Com dgenny — Engajamento -->
+        <div class="slide">
+            <div class="slide-top">
+                <div class="logo">
+                    <div class="logo-ico">✦</div>
+                    <div>dgenny<span class="logo-reg">®</span></div>
+                </div>
+            </div>
+            <div class="content">
+                <div class="eyebrow">Sem dgenny® × Com dgenny®</div>
+                <h2 class="hl hl-lg">Qualidade das Propostas</h2>
+                <p class="sub sub-md mt-12">Do "aceita o que veio" ao mapa equalizado com o melhor de cada fornecedor</p>
+
+                <div class="g2 mt-24">
+                    <div>
+                        <p class="sub" style="font-weight: 600; color: #ff8080; margin-bottom: 12px;">Sem dgenny® — Hoje</p>
+                        <div class="chk bad">
+                            <div>✗</div>
+                            <div>Fornecedor manda produto diferente do solicitado e passa</div>
+                        </div>
+                        <div class="chk bad mt-8">
+                            <div>✗</div>
+                            <div>Marca, unidade, cor errada — entra no mapa do mesmo jeito</div>
+                        </div>
+                        <div class="chk bad mt-8">
+                            <div>✗</div>
+                            <div>Propostas em formato diferente dificulta a equalização</div>
+                        </div>
+                        <div class="chk bad mt-8">
+                            <div>✗</div>
+                            <div>Comprador não tem tempo de conferir item a item</div>
+                        </div>
+                        <div class="chk bad mt-8">
+                            <div>✗</div>
+                            <div>Itens faltando na proposta passam despercebidos</div>
+                        </div>
+                        <div class="chk bad mt-8">
+                            <div>✗</div>
+                            <div>Itens divergentes descartados — perda de oportunidade</div>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="sub" style="font-weight: 600; color: #64e080; margin-bottom: 12px;">Com dgenny® — Nova Realidade</p>
+                        <div class="chk good">
+                            <div>✓</div>
+                            <div>Equaliza automaticamente — marca, unidade, especificação</div>
+                        </div>
+                        <div class="chk good mt-8">
+                            <div>✓</div>
+                            <div>Questiona o fornecedor quando algo diverge — sozinha</div>
+                        </div>
+                        <div class="chk good mt-8">
+                            <div>✓</div>
+                            <div>Interpreta áudio, foto, PDF — qualquer formato vira dado</div>
+                        </div>
+                        <div class="chk good mt-8">
+                            <div>✓</div>
+                            <div>Comprador recebe mapa já conferido e equalizado</div>
+                        </div>
+                        <div class="chk good mt-8">
+                            <div>✓</div>
+                            <div>Cobra item a item que estiver faltando na proposta</div>
+                        </div>
+                        <div class="chk good mt-8">
+                            <div>✓</div>
+                            <div>Itens divergentes separados — comprador decide se quer usar</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card rosa mt-28">
+                    <div class="clabel">O que muda na decisão de compra</div>
+                    <div class="ctitle">"Ela separou os que não obedecem a descrição — mas não descartou. Vai que o comprador prefere esse."</div>
+                    <div class="cdesc mt-8">A dgenny® não decide. Ela organiza o cenário completo para que o comprador decida melhor — com todos os dados na mesa.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: A Alavanca Estratégica -->
+        <div class="slide">
+            <div class="slide-top">
+                <div class="logo">
+                    <div class="logo-ico">✦</div>
+                    <div>dgenny<span class="logo-reg">®</span></div>
+                </div>
+            </div>
+            <div class="content">
+                <div class="eyebrow">A Alavanca Estratégica</div>
+                <h2 class="hl hl-lg">O trabalho que nunca acontece</h2>
+                <p class="sub sub-md mt-12">Quando o operacional consome 100% do tempo, o estratégico fica para depois — e "depois" nunca chega</p>
+
+                <div class="g2 mt-28">
+                    <div class="card danger">
+                        <div class="clabel">O que os compradores fazem hoje</div>
+                        <div class="ctitle">Operacional repetitivo</div>
+                        <div class="cdesc">Ligar para fornecedor, mandar mensagem no WhatsApp, preencher planilha, redigitar no Mega, cobrar quem não respondeu. Todo dia. Para 6 obras simultâneas.</div>
+                    </div>
+                    <div class="card success">
+                        <div class="clabel">O que poderiam estar fazendo</div>
+                        <div class="ctitle c-green">Inteligência de compras</div>
+                        <div class="cdesc">Homologar novos fornecedores, negociar contratos de volume, acompanhar entrega na obra, desenvolver parceiros estratégicos, analisar curva ABC.</div>
+                    </div>
+                </div>
+
+                <div class="card warn mt-24">
+                    <div class="clabel">Contexto da Marca Invest — empresa em crescimento</div>
+                    <div class="ctitle">Processos ainda sendo criados — momento ideal para estruturar certo desde o início</div>
+                    <div class="cdesc mt-8">"Muitos dos processos ainda estão sendo criados. Acredito que depois da primeira obra tem um aprendizado gigantesco para replicar nas novas obras." — Yuri Gomes<br><br>Implementar a dgenny® agora significa que o processo que vai ser replicado já nasce estruturado — e não vira uma herança de retrabalho manual para 10 obras.</div>
+                </div>
+
+                <div class="g3 mt-20">
+                    <div class="card roxo">
+                        <div class="bnum c-green">+1</div>
+                        <div class="cdesc mt-8">comprador efetivo — a mapeadora vira compradora</div>
+                    </div>
+                    <div class="card roxo">
+                        <div class="bnum c-green">5×</div>
+                        <div class="cdesc mt-8">mais fornecedores por cotação sem esforço extra</div>
+                    </div>
+                    <div class="card roxo">
+                        <div class="bnum">0</div>
+                        <div class="cdesc mt-8">retrabalho Excel → Mega — entra direto no ERP</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Transformação Operacional -->
+        <div class="slide">
+            <div class="slide-top">
+                <div class="logo">
+                    <div class="logo-ico">✦</div>
+                    <div>dgenny<span class="logo-reg">®</span></div>
+                </div>
+            </div>
+            <div class="content">
+                <div class="eyebrow">Transformação Operacional</div>
+                <h2 class="hl hl-lg">Antes × Depois — equipe de compras</h2>
+                <p class="sub sub-md mt-12">O que muda no dia a dia de 3 compradores + 1 mapeadora da Marca Invest</p>
+
+                <table class="dtable mt-24">
+                    <tbody>
+                        <tr>
+                            <th>Métrica</th>
+                            <th style="text-align: center;">Hoje</th>
+                            <th></th>
+                            <th style="text-align: right;">Com dgenny®</th>
+                        </tr>
+                        <tr>
+                            <td>Disparo e follow-up com fornecedores</td>
+                            <td style="color: #ff8080;">Manual — horas por cotação</td>
+                            <td style="text-align: center; color: rgba(102, 96, 180, 0.4);">→</td>
+                            <td style="text-align: right; color: #64e080;">Automático — minutos</td>
+                        </tr>
+                        <tr>
+                            <td>Consolidação do mapa de cotação</td>
+                            <td style="color: #ff8080;">1 pessoa dedicada em Excel</td>
+                            <td style="text-align: center; color: rgba(102, 96, 180, 0.4);">→</td>
+                            <td style="text-align: right; color: #64e080;">Automático — sem planilha</td>
+                        </tr>
+                        <tr>
+                            <td>Entrada no mapa do Mega</td>
+                            <td style="color: #ff8080;">Redigitação manual (dupla entrada)</td>
+                            <td style="text-align: center; color: rgba(102, 96, 180, 0.4);">→</td>
+                            <td style="text-align: right; color: #64e080;">Integração direta — zero retrabalho</td>
+                        </tr>
+                        <tr>
+                            <td>Propostas por cotação</td>
+                            <td style="color: #ff8080;">~3 (limite operacional)</td>
+                            <td style="text-align: center; color: rgba(102, 96, 180, 0.4);">→</td>
+                            <td style="text-align: right; color: #64e080;">5 a 9+ sem esforço</td>
+                        </tr>
+                        <tr>
+                            <td>Compradores efetivos na equipe</td>
+                            <td style="color: #ff8080;">3 (1 faz só mapa)</td>
+                            <td style="text-align: center; color: rgba(102, 96, 180, 0.4);">→</td>
+                            <td style="text-align: right; color: #64e080;">4 (sem contratar)</td>
+                        </tr>
+                        <tr>
+                            <td>Rastreabilidade das negociações</td>
+                            <td style="color: #ff8080;">Dispersa em WhatsApps pessoais</td>
+                            <td style="text-align: center; color: rgba(102, 96, 180, 0.4);">→</td>
+                            <td style="text-align: right; color: #64e080;">Central — acesso do gestor em tempo real</td>
+                        </tr>
+                        <tr>
+                            <td>Capacidade de absorver novas obras</td>
+                            <td style="color: #ff8080;">Limitada — mesmo gargalo, mais volume</td>
+                            <td style="text-align: center; color: rgba(102, 96, 180, 0.4);">→</td>
+                            <td style="text-align: right; color: #64e080;">Escalável — processo não depende de mão extra</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="card rosa mt-20">
+                    <div class="clabel">Para o gestor</div>
+                    <div class="ctitle">Central de eficiência — visão em tempo real de todas as cotações</div>
+                    <div class="cdesc mt-8">Quanto a dgenny® trabalhou, quantas propostas levantou, quais cotações estão em andamento, quanto de horas economizou. Tudo visível sem precisar perguntar para os compradores.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Para o Decisor -->
+        <div class="slide">
+            <div class="slide-top">
+                <div class="logo">
+                    <div class="logo-ico">✦</div>
+                    <div>dgenny<span class="logo-reg">®</span></div>
+                </div>
+            </div>
+            <div class="content">
+                <div class="eyebrow">Para o Diretor de Compras</div>
+                <h2 class="hl hl-lg">O que a IA muda na gestão de compras</h2>
+                <p class="sub sub-md mt-12">Uma construtora com 6 obras e crescimento planejado precisa de um processo que escale — não de mais pessoas fazendo planilha</p>
+
+                <div class="g2 mt-28">
+                    <div class="card roxo">
+                        <div class="clabel">O risco de não agir agora</div>
+                        <div class="ctitle">O processo que vai ser replicado já nasce errado</div>
+                        <div class="cdesc mt-8">A Marca Invest está criando seus processos agora. Se o fluxo que vai para as próximas 8–10 obras for o atual — manual, em Excel, dependente de 1 mapeadora — o problema vai escalar junto com as obras.</div>
+                    </div>
+                    <div class="card success">
+                        <div class="clabel">A oportunidade estratégica</div>
+                        <div class="ctitle c-green">Estruturar certo desde o início</div>
+                        <div class="cdesc mt-8">Implementar a dgenny® agora significa que o processo que vai ser replicado já nasce automatizado. Cada nova obra que entrar absorve o processo — não cria pressão nova sobre a equipe.</div>
+                    </div>
+                </div>
+
+                <div class="roi-box mt-28">
+                    <div class="roi-num">+33%</div>
+                    <div class="roi-lbl">de capacidade operacional sem contratar — a mapeadora vira compradora</div>
+                </div>
+
+                <div class="g2 mt-20">
+                    <div class="card danger">
+                        <div class="clabel">Custo de postergação</div>
+                        <div class="ctitle">Cada mês sem dgenny®</div>
+                        <div class="cdesc">= horas de retrabalho acumuladas, propostas não levantadas por falta de tempo, fornecedores não homologados, mercado não mapeado.</div>
+                    </div>
+                    <div class="card success">
+                        <div class="clabel">Retorno imediato</div>
+                        <div class="ctitle c-green">Primeiro ciclo com dgenny®</div>
+                        <div class="cdesc">Mapa gerado sem planilha, mais fornecedores na cotação, mapeadora livre para comprar. O ROI começa no dia 1 de operação.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Custo de Oportunidade -->
+        <div class="slide">
+            <div class="slide-top">
+                <div class="logo">
+                    <div class="logo-ico">✦</div>
+                    <div>dgenny<span class="logo-reg">®</span></div>
+                </div>
+            </div>
+            <div class="content">
+                <div class="eyebrow">Custo de Oportunidade</div>
+                <h2 class="hl hl-lg">O que fica na mesa todo mês</h2>
+                <p class="sub sub-md mt-12">O custo invisível do processo atual — que não aparece no DRE, mas sai do resultado</p>
+
+                <table class="dtable mt-24">
+                    <tbody>
+                        <tr>
+                            <th>Categoria</th>
+                            <th style="text-align: right;">Impacto</th>
+                        </tr>
+                        <tr class="sub-head red">
+                            <td>CUSTO DE RETRABALHO</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Horas da mapeadora consolidando Excel por cotação</td>
+                            <td style="text-align: right; color: #ff8080;">Salário inteiro · 100% operacional</td>
+                        </tr>
+                        <tr>
+                            <td>Redigitação do Excel para o Mega (dupla entrada)</td>
+                            <td style="text-align: right; color: #ff8080;">Horas extras de retrabalho diário</td>
+                        </tr>
+                        <tr>
+                            <td>Follow-up manual com fornecedores sem resposta</td>
+                            <td style="text-align: right; color: #ff8080;">Compradores interrompem análise para ligar</td>
+                        </tr>
+                        <tr class="sub-head red">
+                            <td>CUSTO DE COMPETIÇÃO LIMITADA</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Cotações com ~3 fornecedores (limitação de tempo)</td>
+                            <td style="text-align: right; color: #ff8080;">Menos barganha, preços menos competitivos</td>
+                        </tr>
+                        <tr>
+                            <td>Fornecedores novos nunca homologados (falta de tempo)</td>
+                            <td style="text-align: right; color: #ff8080;">Dependência de parceiros já conhecidos</td>
+                        </tr>
+                        <tr class="sub-head red">
+                            <td>RISCO DE ESCALA</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>2 obras novas sendo lançadas — mesmo processo, mais volume</td>
+                            <td style="text-align: right; color: #ff8080;">Gargalo cresce junto com a empresa</td>
+                        </tr>
+                        <tr>
+                            <td>Processos sendo criados agora — risco de consolidar o errado</td>
+                            <td style="text-align: right; color: #ff8080;">Herança de retrabalho para 10+ obras</td>
+                        </tr>
+                        <tr class="sub-head grn">
+                            <td>POTENCIAL DE RECUPERAÇÃO COM DGENNY®</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Mapeadora realocada como 4ª compradora</td>
+                            <td style="text-align: right; color: #64e080;">+33% de capacidade — sem contratar</td>
+                        </tr>
+                        <tr>
+                            <td>Mais fornecedores por cotação → mais competição → melhor preço</td>
+                            <td style="text-align: right; color: #64e080;">Melhoria progressiva nas condições</td>
+                        </tr>
+                        <tr>
+                            <td>Processo estruturado que replica para novas obras</td>
+                            <td style="text-align: right; color: #64e080;">Escala sem custo linear de equipe</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slide 11: Próximos Passos -->
+        <div class="slide">
+            <div class="slide-top">
+                <div class="logo">
+                    <div class="logo-ico">✦</div>
+                    <div>dgenny<span class="logo-reg">®</span></div>
+                </div>
+                <div class="tag">Próximos Passos</div>
+            </div>
+            <div class="content">
+                <div class="eyebrow">O Que Acontece Agora</div>
+                <h2 class="hl hl-lg">Cada semana com o processo atual</h2>
+                <p class="sub sub-md mt-12">é mais uma semana de retrabalho, planilha manual e mapeadora que poderia estar comprando.</p>
+
+                <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 32px; position: relative; z-index: 1;">
+                    <div class="next-step-card nsc">
+                        <div class="ns-num">1</div>
+                        <div>
+                            <div class="nt">Yuri aquece o assunto internamente</div>
+                            <div class="nd">Compartilha este mapa com o Diretor de Compras e os 3 compradores. O slide 9 foi feito especialmente para o diretor — ângulo de escala e risco de replicar o processo errado.</div>
+                            <div class="na">→ Esta semana</div>
+                        </div>
+                    </div>
+                    <div class="next-step-card nsc">
+                        <div class="ns-num">2</div>
+                        <div>
+                            <div class="nt">Demonstração ao vivo — cotação real do zero</div>
+                            <div class="nd">Compradores + Diretor de Compras na call. A dgenny® faz uma cotação completa ao vivo — disparo via WhatsApp, coleta de propostas, mapa gerado, integração com o Mega. Sem PowerPoint. Com o processo real de vocês.</div>
+                            <div class="na">→ Semana que vem ou conforme agenda do time</div>
+                        </div>
+                    </div>
+                    <div class="next-step-card nsc">
+                        <div class="ns-num">3</div>
+                        <div>
+                            <div class="nt">Proposta personalizada + decisão</div>
+                            <div class="nd">Com o Diretor de Compras presente, apresentamos proposta adaptada ao volume e contexto da Marca Invest — com ROI projetado para o número de obras em andamento e as novas que estão sendo lançadas.</div>
+                            <div class="na">→ Na mesma reunião ou em call específica</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card rosa mt-24" style="text-align: center;">
+                    <div class="ctitle" style="font-size: 20px;">Compre melhor. Escale mais. Liberte a equipe.</div>
+                    <div class="cdesc mt-8">A dgenny® não substitui nenhum comprador. Ela elimina a planilha, automatiza o WhatsApp e entrega o mapa direto no Mega — para que o time foque no que gera resultado.</div>
+                </div>
+
+                <p class="fn" style="text-align: center;">Tierre · dgenny® · tierre@dgenny.com.br</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="nav-bar">
+        <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+        <div class="slide-counter" id="counter">1 / 11</div>
+        <button class="nav-btn" onclick="nextSlide()">Próximo →</button>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        let cur = 0;
+        const total = slides.length;
+
+        function update() {
+            slides.forEach((s, i) => s.classList.toggle('active', i === cur));
+            document.getElementById('counter').textContent = (cur + 1) + ' / ' + total;
+            document.getElementById('progressBar').style.width = ((cur + 1) / total * 100) + '%';
+        }
+
+        function nextSlide() {
+            if (cur < total - 1) { cur++; update(); }
+        }
+
+        function prevSlide() {
+            if (cur > 0) { cur--; update(); }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        });
+
+        let _tx = 0, _ty = 0;
+        document.addEventListener('touchstart', function(e) {
+            _tx = e.touches[0].clientX; _ty = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', function(e) {
+            const dx = e.changedTouches[0].clientX - _tx;
+            const dy = e.changedTouches[0].clientY - _ty;
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 48) {
+                if (dx < 0) nextSlide(); else prevSlide();
+            }
+        }, { passive: true });
+
+        update();
+    </script>
+</body>
+</html>
